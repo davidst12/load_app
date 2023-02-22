@@ -7,11 +7,13 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateInterpolator
+import android.view.animation.Animation
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import androidx.core.animation.addListener
 import androidx.core.animation.addPauseListener
 import androidx.core.animation.doOnEnd
+import androidx.core.content.withStyledAttributes
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.content_main.view.*
 import timber.log.Timber
@@ -24,6 +26,7 @@ class LoadingButton @JvmOverloads constructor(
     private var heightSize = 0
 
     private var text = context.getString(R.string.download_button_text)
+    private var backgroundCustomColor = 0
     private var radius = 40f;
     private var progressWidth = 0f
     private var progressAngle = 0f
@@ -44,7 +47,7 @@ class LoadingButton @JvmOverloads constructor(
             ButtonState.Clicked ->{}
             ButtonState.Loading ->{
                 text = context.getString(R.string.downloading_button_text)
-                setUpAnimations(0f, 0f)
+                setUpAnimations(0f, 0f, ButtonState.Loading)
                 set.apply {
                     playTogether(buttonAnimator, circleAnimator)
                     duration = 5000
@@ -54,7 +57,7 @@ class LoadingButton @JvmOverloads constructor(
             }
             ButtonState.Completed -> {
                 // Set up a new animation that starts base on the progress of the button
-                setUpAnimations(progressWidth, progressAngle)
+                setUpAnimations(progressWidth, progressAngle, ButtonState.Completed)
                 set.end()
                 text = context.getString(R.string.downloading_button_text)
                 //Start a new faster animation
@@ -70,13 +73,17 @@ class LoadingButton @JvmOverloads constructor(
 
     init {
         isClickable = true
+
+        context.withStyledAttributes(attrs, R.styleable.LoadingButton){
+            backgroundCustomColor = getColor(R.styleable.LoadingButton_backgroundButton, 0)
+        }
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
         // Draw main rectangle
-        paint.color = Color.CYAN
+        paint.color = backgroundCustomColor
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
 
         // Draw progress bar
@@ -111,7 +118,7 @@ class LoadingButton @JvmOverloads constructor(
         heightSize = height
     }
 
-    private fun setUpAnimations(currentWidth: Float, currentAngle: Float){
+    private fun setUpAnimations(currentWidth: Float, currentAngle: Float, status: ButtonState){
         buttonAnimator = ValueAnimator.ofFloat(currentWidth, widthSize.toFloat())
             .apply {
                 addUpdateListener {
@@ -132,6 +139,9 @@ class LoadingButton @JvmOverloads constructor(
                     progressWidth=0f
                     progressAngle=0f
                     text = context.getString(R.string.download_button_text)
+                }else{
+                    // Animation continue while downloading (similar to repeat = infinite)
+                    set.start()
                 }
             }
         })
