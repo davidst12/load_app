@@ -27,6 +27,8 @@ class LoadingButton @JvmOverloads constructor(
 
     private var text = context.getString(R.string.download_button_text)
     private var backgroundCustomColor = 0
+    private var textCustomColor = 0
+    private var circleCustomColor = 0
     private var radius = 40f;
     private var progressWidth = 0f
     private var progressAngle = 0f
@@ -75,7 +77,9 @@ class LoadingButton @JvmOverloads constructor(
         isClickable = true
 
         context.withStyledAttributes(attrs, R.styleable.LoadingButton){
-            backgroundCustomColor = getColor(R.styleable.LoadingButton_backgroundButton, 0)
+            backgroundCustomColor = getColor(R.styleable.LoadingButton_backgroundButtonColor, 0)
+            textCustomColor = getColor(R.styleable.LoadingButton_textButtonColor, 0)
+            circleCustomColor = getColor(R.styleable.LoadingButton_circleButtonColor, 0)
         }
     }
 
@@ -91,11 +95,11 @@ class LoadingButton @JvmOverloads constructor(
         canvas.drawRect(0f, 0f, progressWidth, height.toFloat(), paint)
 
         //Draw text
-        paint.color = Color.WHITE
+        paint.color = textCustomColor
         canvas.drawText(text, width/2f, (height.toFloat()-paint.descent()-paint.ascent())/2 , paint)
 
         //Draw progress circle
-        paint.color = Color.YELLOW
+        paint.color = circleCustomColor
         canvas.drawArc(width.toFloat()*0.9f - radius, height.toFloat()/2 - radius,width.toFloat()*0.9f + radius, height.toFloat()/2 + radius, 0f, progressAngle, true, paint)
 
     }
@@ -140,7 +144,7 @@ class LoadingButton @JvmOverloads constructor(
                     progressAngle=0f
                     text = context.getString(R.string.download_button_text)
                 }else{
-                    // Animation continue while downloading (similar to repeat = infinite)
+                    // Animation continue while downloading (same behaviour as repeat = infinite)
                     set.start()
                 }
             }
